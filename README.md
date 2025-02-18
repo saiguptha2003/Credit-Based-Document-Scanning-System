@@ -73,10 +73,6 @@ cd Credit-Based-Document-Scanning-System
    ```
 4. Access the application at `http://localhost:5000`
 
-   
-   
-
-
 ## Usage
 How to use the system after installation.
 
