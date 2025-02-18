@@ -10,3 +10,10 @@ Flask-Login
 PyPDF2
 scikit-learn
 numpy
+pytest
+pytest-cov
+pytest-mock
+pytest-flask
+pytest-flask-sqlalchemy
+pytest-flask-login
+pytest-flask-cors
