@@ -1,28 +1,27 @@
 import sys
 import os
+import warnings
+from pypdf import PdfReader
 
-# Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import the Flask app instance from the main app file
 from setup.app import createApp
-# Import pytest for writing and running tests
 import pytest
 from utils import db
 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 @pytest.fixture
 def client():
-    """A test client for the app."""
-    app = createApp('testing')  # Ensure you have a testing configuration
+    app = createApp() 
     with app.test_client() as client:
         with app.app_context():
-            db.create_all()  # Create the database tables
+            db.create_all()  
         yield client
-        db.drop_all()  # Clean up after tests
+        db.drop_all()  
 
-def test_register_success(client):
-    """Test successful registration."""
-    response = client.post('/register', json={
+def testRegisterSuccess(client):
+    response = client.post('/api/auth/register', json={
         'username': 'testuser',
         'email': 'test@example.com',
         'password': 'securepassword'
@@ -30,9 +29,8 @@ def test_register_success(client):
     assert response.status_code == 201
     assert b'Registration successful' in response.data
 
-def test_register_missing_fields(client):
-    """Test registration with missing fields."""
-    response = client.post('/register', json={
+def testRegisterMissingFields(client):
+    response = client.post('/api/auth/register', json={
         'username': 'testuser',
         'email': 'test@example.com'
         # Missing password
@@ -40,14 +38,13 @@ def test_register_missing_fields(client):
     assert response.status_code == 400
     assert b'Missing required fields' in response.data
 
-def test_register_username_exists(client):
-    """Test registration with an existing username."""
-    client.post('/register', json={
+def testRegisterUsernameExists(client):
+    client.post('/api/auth/register', json={
         'username': 'testuser',
         'email': 'test@example.com',
         'password': 'securepassword'
     })
-    response = client.post('/register', json={
+    response = client.post('/api/auth/register', json={
         'username': 'testuser',
         'email': 'new@example.com',
         'password': 'anotherpassword'
@@ -55,14 +52,13 @@ def test_register_username_exists(client):
     assert response.status_code == 400
     assert b'Username already exists' in response.data
 
-def test_register_email_exists(client):
-    """Test registration with an existing email."""
-    client.post('/register', json={
+def testRegisterEmailExists(client):
+    client.post('/api/auth/register', json={
         'username': 'testuser',
         'email': 'test@example.com',
         'password': 'securepassword'
     })
-    response = client.post('/register', json={
+    response = client.post('/api/auth/register', json={
         'username': 'newuser',
         'email': 'test@example.com',
         'password': 'anotherpassword'
