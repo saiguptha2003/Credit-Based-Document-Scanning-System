@@ -27,3 +27,5 @@ __pycache__/
 **.log
 **Reference.txt
 **.db
+
+venv
