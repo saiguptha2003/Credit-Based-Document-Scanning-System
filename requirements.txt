@@ -1,0 +1,12 @@
+Flask
+Flask-SQLAlchemy
+Flask-JWT-Extended
+Flask-Cors
+APScheduler
+python-dotenv
+Werkzeug
+SQLAlchemy
+Flask-Login
+PyPDF2
+scikit-learn
+numpy
