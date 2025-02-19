@@ -18,8 +18,16 @@ You can clone the repository using Git:
 
 ```bash
 git clone https://github.com/saiguptha2003/Credit-Based-Document-Scanning-System.git
+
+```
+change directory to the project directory
+
+```bash
 cd Credit-Based-Document-Scanning-System
 ```
+
+
+
 ### Docker Compose Installation
 1. Ensure you have Docker Compose installed. You can find installation instructions [here](https://docs.docker.com/compose/install/).
 2. In the project directory, run:
