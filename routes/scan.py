@@ -78,6 +78,58 @@ def dashboard():
     }), 200
 
 
+@scanBP.route('/scan-document', methods=['POST'])
+@login_required
+def scanDocument():
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not allowedFile(file.filename):
+            return jsonify({'error': 'File type not allowed. Please upload PDF or TXT files only'}), 400
+        
+        try:
+            if file.filename.endswith('.pdf'):
+                content = readPDFContent(file)
+            else:  # txt file
+                content = file.read().decode('utf-8')
+        except Exception as e:
+            return jsonify({'error': f'Error reading file: {str(e)}'}), 400
+        
+        try:
+            new_doc = Document(
+                title=secure_filename(file.filename),
+                content=content,
+                user_id=current_user.id,
+                created_at=datetime.now(timezone.utc)
+            )
+
+            user = User.query.get(current_user.id)
+            if user.credits <= 0:
+                return jsonify({'error': 'Insufficient credits. Please request more credits.'}), 403           
+            db.session.add(new_doc)
+            db.session.commit()
+            db.session.refresh(new_doc)
+            similar_docs = findSimilarDocuments(content)
+            return jsonify({
+                'message': 'Document scanned successfully',
+                'document': serializeDocument(new_doc),
+                'similar_documents': similar_docs
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Database error: {str(e)}'}), 500
+        
+    except Exception as e:
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
+
+
 
 
 def findSimilarDocuments(content, threshold=SIMILARITY_THRESHOLD):
