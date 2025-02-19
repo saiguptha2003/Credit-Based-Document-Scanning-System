@@ -16,3 +16,20 @@ login_manager = LoginManager()
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+def setupScheduler(app):
+    scheduler = BackgroundScheduler()
+    def resetDailyCredits():
+        with app.app_context():
+            users = User.query.all()
+            for user in users:
+                user.credits = app.config['DAILY_FREE_CREDITS']
+            db.session.commit()
+    scheduler.add_job(
+        func=resetDailyCredits,
+        trigger=CronTrigger(hour=0, minute=0),
+        id='reset_credits',
+        name='Reset daily credits at midnight',
+        replace_existing=True
+    )
+    scheduler.start()
