@@ -356,7 +356,7 @@ cd Credit-Based-Document-Scanning-System
 - **report**: Added test reports 
 - **pkg**: Added packages to the `__init__.py` file
 - **ignore**: Ignored Docker-related files
-- **db**: Database-related changes
+- **db**: Database-related changes or migrations or creations
 
 
 
