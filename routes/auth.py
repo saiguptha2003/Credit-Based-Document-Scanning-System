@@ -61,3 +61,17 @@ def login():
         return jsonify({'error': 'Invalid credentials'}), 401
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
+
+@authBP.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    try: 
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'User is not logged in'}), 401
+        logout_user()
+        return jsonify({'message': 'Logout successful'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
