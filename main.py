@@ -37,6 +37,7 @@ def setupScheduler(app):
 
 if __name__ == '__main__':
     app = createApp()
+    login_manager.init_app(app)
     setupScheduler(app)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True, host='0.0.0.0', port=5000)
