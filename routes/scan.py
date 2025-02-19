@@ -27,3 +27,15 @@ def readPDFContent(file):
     for page in pdf_reader.pages:
         text += page.extract_text()
     return text
+
+
+
+def calculateSimilarity(text1, text2):
+    try:
+        vectorizer = TfidfVectorizer()
+        tfidf_matrix = vectorizer.fit_transform([text1, text2])
+        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+        return float(similarity)
+    except Exception as e:
+        print(f"Error calculating similarity: {str(e)}")
+        return 0.0
