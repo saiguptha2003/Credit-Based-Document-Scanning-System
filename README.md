@@ -341,6 +341,25 @@ cd Credit-Based-Document-Scanning-System
         ]
     }
     ```
+
+
+## Commit Structure
+
+**note**: use the following structure for the commit messages
+- **bug**: Fixed raised issues
+- **feat**: Added features
+- **styles**: Added CSS styles
+- **modify**: Modified the code
+- **core**: Core functionality
+- **create**: Created new files or features
+- **git**: Ignored files modifications
+- **report**: Added test reports 
+- **pkg**: Added packages to the `__init__.py` file
+- **ignore**: Ignored Docker-related files
+- **db**: Database-related changes
+
+
+
 ## Contributing
 Guidelines for contributing to the project.
 
