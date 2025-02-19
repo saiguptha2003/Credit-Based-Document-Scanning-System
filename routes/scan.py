@@ -28,8 +28,6 @@ def readPDFContent(file):
         text += page.extract_text()
     return text
 
-
-
 def calculateSimilarity(text1, text2):
     try:
         vectorizer = TfidfVectorizer()
@@ -39,3 +37,17 @@ def calculateSimilarity(text1, text2):
     except Exception as e:
         print(f"Error calculating similarity: {str(e)}")
         return 0.0
+    
+def serializeDocument(doc, similarity=None):
+    if not doc:
+        return None
+    result = {
+        'id': doc.id,
+        'title': doc.title,
+        'content': doc.content[:200] + '...' if len(doc.content) > 200 else doc.content,
+        'created_at': doc.created_at.isoformat() if doc.created_at else None,
+        'user_id': doc.user_id
+    }
+    if similarity is not None:
+        result['similarity'] = round(similarity * 100, 2) 
+    return result
