@@ -82,3 +82,39 @@ def handleCreditRequest(request_id):
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
+@adminBP.route('/analytics', methods=['GET'])
+@login_required
+@adminRequired
+def analytics():
+    user_stats = db.session.query(
+        User.username,
+        db.func.count(Document.id).label('scan_count')
+    ).join(Document).group_by(User.id).all()
+    
+    credit_stats = db.session.query(
+        User.username,
+        User.credits
+    ).filter(User.is_admin == False).all() 
+    
+    doc_stats = db.session.query(
+        db.func.substr(Document.title, -4).label('extension'),
+        db.func.count().label('count')
+    ).group_by('extension').all()
+    
+    return jsonify({
+        'user_statistics': [{
+            'username': stat[0],
+            'scan_count': stat[1]
+        } for stat in user_stats],
+        'credit_statistics': [{
+            'username': stat[0],
+            'credits': stat[1]
+        } for stat in credit_stats],
+        'document_statistics': [{
+            'extension': stat[0],
+            'count': stat[1]
+        } for stat in doc_stats]
+    }), 200
