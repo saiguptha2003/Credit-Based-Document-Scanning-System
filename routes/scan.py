@@ -51,3 +51,28 @@ def serializeDocument(doc, similarity=None):
     if similarity is not None:
         result['similarity'] = round(similarity * 100, 2) 
     return result
+
+
+@scanBP.route('/dashboard', methods=['GET'])
+@login_required
+def dashboard():
+    documents = Document.query.filter_by(user_id=current_user.id).all()
+    credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).all()
+    
+    return jsonify({
+        'user': {
+            'username': current_user.username,
+            'credits': current_user.credits
+        },
+        'documents': [{
+            'id': doc.id,
+            'title': doc.title,
+            'created_at': doc.created_at.isoformat()
+        } for doc in documents],
+        'credit_requests': [{
+            'id': req.id,
+            'amount': req.amount,
+            'status': req.status,
+            'created_at': req.created_at.isoformat()
+        } for req in credit_requests]
+    }), 200
