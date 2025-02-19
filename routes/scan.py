@@ -76,3 +76,40 @@ def dashboard():
             'created_at': req.created_at.isoformat()
         } for req in credit_requests]
     }), 200
+
+
+
+
+def findSimilarDocuments(content, threshold=SIMILARITY_THRESHOLD):
+    try:
+        similarDocs = []
+        allDocs = Document.query.filter_by(user_id=current_user.id).all()
+        
+        for doc in allDocs:
+            similarity = calculateSimilarity(content, doc.content)
+            if similarity > threshold:
+                similarDocs.append((doc, similarity))
+        
+        # Sort by similarity score in descending order
+        similarDocs.sort(key=lambda x: x[1], reverse=True)
+        user = User.query.get(current_user.id)
+        if user.credits <= 0:
+            return jsonify({'error': 'Insufficient credits. Please request more credits.'}), 403
+        user.credits -= 1
+        db.session.add(user)
+        db.session.commit()        
+        
+        # Return the documents with their similarity scores
+        return [
+            serializeDocument(doc, similarity)
+            for doc, similarity in similarDocs
+            if doc.id != Document.query.order_by(Document.id.desc()).first().id  # Exclude the current document
+        ]
+    except Exception as e:
+        print(f"Error in findSimilarDocuments: {str(e)}")
+        return []
+
+
+
+
+
