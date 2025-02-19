@@ -263,7 +263,7 @@ cd Credit-Based-Document-Scanning-System
 ### Authentication Routes
 
 #### 1. Register Route
-- **Endpoint:** `/register`
+- **Endpoint:** `/api/auth/register`
 - **Method:** `POST`
 - **Description:** Allows new users to register by providing a username, email, and password.
 - **Request Body:**
@@ -290,7 +290,7 @@ cd Credit-Based-Document-Scanning-System
     ```
 
 #### 2. Login Route
-- **Endpoint:** `/login`
+- **Endpoint:** `/api/auth/login`
 - **Method:** `POST`
 - **Description:** Authenticates a user by verifying their username and password.
 - **Request Body:**
@@ -318,7 +318,7 @@ cd Credit-Based-Document-Scanning-System
     ```
 
 #### 3. Logout Route
-- **Endpoint:** `/logout`
+- **Endpoint:** `/api/auth/logout`
 - **Method:** `POST`
 - **Description:** Logs out the currently authenticated user.
 - **Response:**
