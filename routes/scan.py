@@ -16,3 +16,6 @@ scanBP = Blueprint('scanBP', __name__)
 
 ALLOWED_EXTENSIONS = {'pdf', 'txt'}
 SIMILARITY_THRESHOLD = 0.3
+
+def allowedFile(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
