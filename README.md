@@ -260,6 +260,75 @@ cd Credit-Based-Document-Scanning-System
         ]
     }
     ```
+### Authentication Routes
+
+#### 1. Register Route
+- **Endpoint:** `/register`
+- **Method:** `POST`
+- **Description:** Allows new users to register by providing a username, email, and password.
+- **Request Body:**
+  - **JSON:**
+    ```json
+    {
+        "username": "string",
+        "email": "string",
+        "password": "string"
+    }
+    ```
+- **Response:**
+  - **Status Code:** `201 Created` (on success) or `400 Bad Request` (on missing fields or existing username/email) or `500 Internal Server Error` (on error)
+  - **Response Body (Success):**
+    ```json
+    {
+        "message": "Registration successful",
+        "user": {
+            "id": "integer",
+            "username": "string",
+            "email": "string"
+        }
+    }
+    ```
+
+#### 2. Login Route
+- **Endpoint:** `/login`
+- **Method:** `POST`
+- **Description:** Authenticates a user by verifying their username and password.
+- **Request Body:**
+  - **JSON:**
+    ```json
+    {
+        "username": "string",
+        "password": "string"
+    }
+    ```
+- **Response:**
+  - **Status Code:** `200 OK` (on success) or `400 Bad Request` (on missing fields) or `401 Unauthorized` (on invalid credentials) or `404 Not Found` (if user does not exist) or `500 Internal Server Error` (on error)
+  - **Response Body (Success):**
+    ```json
+    {
+        "message": "Login successful",
+        "user": {
+            "id": "integer",
+            "username": "string",
+            "email": "string",
+            "credits": "integer",
+            "is_admin": "boolean"
+        }
+    }
+    ```
+
+#### 3. Logout Route
+- **Endpoint:** `/logout`
+- **Method:** `POST`
+- **Description:** Logs out the currently authenticated user.
+- **Response:**
+  - **Status Code:** `200 OK` (on success) or `401 Unauthorized` (if user is not logged in) or `500 Internal Server Error` (on error)
+  - **Response Body (Success):**
+    ```json
+    {
+        "message": "Logout successful"
+    }
+    ```
 
 ## Contributing
 Guidelines for contributing to the project.
