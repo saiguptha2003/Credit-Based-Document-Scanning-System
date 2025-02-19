@@ -132,6 +132,36 @@ def scanDocument():
 
 
 
+@scanBP.route('/request-credits', methods=['POST'])
+@login_required
+def requestCredits():
+    data = request.get_json()
+    amount = data.get('amount')
+    
+    if not amount or amount <= 0:
+        return jsonify({'error': 'Invalid credit amount'}), 400
+        
+    creditRequest = CreditRequest(
+        user_id=current_user.id,
+        amount=amount,
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    db.session.add(creditRequest)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Credit request submitted',
+        'request': {
+            'id': creditRequest.id,
+            'amount': creditRequest.amount,
+            'status': creditRequest.status,
+            'created_at': creditRequest.created_at.isoformat()
+        }
+    }), 201
+
+
+
 def findSimilarDocuments(content, threshold=SIMILARITY_THRESHOLD):
     try:
         similarDocs = []
