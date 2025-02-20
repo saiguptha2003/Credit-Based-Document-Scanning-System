@@ -12,9 +12,7 @@ class User(UserMixin, db.Model):
     credits = db.Column(db.Integer, default=20)
     last_credit_reset = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     documents = db.relationship('Document', backref='owner', lazy='dynamic')
-
     def setPassword(self, password):
         self.password_hash = generate_password_hash(password)
-
     def checkPassword(self, password):
         return check_password_hash(self.password_hash, password)
