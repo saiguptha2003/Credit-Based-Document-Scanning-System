@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from flask_login import login_required, current_user
 from models import Document, CreditRequest,User
+from utils import token_required
 from utils import db
 import difflib
 from werkzeug.utils import secure_filename
@@ -52,10 +52,9 @@ def serializeDocument(doc, similarity=None):
         result['similarity'] = round(similarity * 100, 2) 
     return result
 
-
 @scanBP.route('/dashboard', methods=['GET'])
-@login_required
-def dashboard():
+@token_required
+def dashboard(current_user):
     try:
         documents = Document.query.filter_by(user_id=current_user.id).all()
         credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).all()
@@ -63,6 +62,7 @@ def dashboard():
         return jsonify({
             'user': {
                 'username': current_user.username,
+                'email': current_user.email,
                 'credits': current_user.credits
             },
             'documents': [{
@@ -81,8 +81,8 @@ def dashboard():
         return jsonify({'error': f'Error retrieving dashboard data: {str(e)}'}), 500
 
 @scanBP.route('/scan-document', methods=['POST'])
-@login_required
-def scanDocument():
+@token_required
+def scanDocument(current_user):
     try:
         if 'file' not in request.files:
             return jsonify({'error': 'No file provided'}), 400
@@ -124,7 +124,7 @@ def scanDocument():
             db.session.add(new_doc)
             db.session.commit()
             db.session.refresh(new_doc)
-            similar_docs = findSimilarDocuments(content)
+            similar_docs = findSimilarDocuments(content,current_user)
             return jsonify({
                 'message': 'Document scanned successfully',
                 'document': serializeDocument(new_doc),
@@ -139,8 +139,8 @@ def scanDocument():
 
 
 @scanBP.route('/request-credits', methods=['POST'])
-@login_required
-def requestCredits():
+@token_required
+def requestCredits(current_user):
     try:
         data = request.get_json()
         amount = data.get('amount')
@@ -172,19 +172,14 @@ def requestCredits():
         return jsonify({'error': f'Error processing credit request: {str(e)}'}), 500
 
 
-
-
-def findSimilarDocuments(content, threshold=SIMILARITY_THRESHOLD):
+def findSimilarDocuments(content, current_user, threshold=SIMILARITY_THRESHOLD):
     try:
         similarDocs = []
         allDocs = Document.query.filter_by(user_id=current_user.id).all()
-        
         for doc in allDocs:
             similarity = calculateSimilarity(content, doc.content)
             if similarity > threshold:
                 similarDocs.append((doc, similarity))
-        
-        # Sort by similarity score in descending order
         similarDocs.sort(key=lambda x: x[1], reverse=True)
         user = User.query.get(current_user.id)
         if user.credits <= 0:
@@ -192,8 +187,6 @@ def findSimilarDocuments(content, threshold=SIMILARITY_THRESHOLD):
         user.credits -= 1
         db.session.add(user)
         db.session.commit()        
-        
-        # Return the documents with their similarity scores
         return [
             serializeDocument(doc, similarity)
             for doc, similarity in similarDocs
