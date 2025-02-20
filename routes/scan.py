@@ -56,27 +56,29 @@ def serializeDocument(doc, similarity=None):
 @scanBP.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
-    documents = Document.query.filter_by(user_id=current_user.id).all()
-    credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).all()
-    
-    return jsonify({
-        'user': {
-            'username': current_user.username,
-            'credits': current_user.credits
-        },
-        'documents': [{
-            'id': doc.id,
-            'title': doc.title,
-            'created_at': doc.created_at.isoformat()
-        } for doc in documents],
-        'credit_requests': [{
-            'id': req.id,
-            'amount': req.amount,
-            'status': req.status,
-            'created_at': req.created_at.isoformat()
-        } for req in credit_requests]
-    }), 200
-
+    try:
+        documents = Document.query.filter_by(user_id=current_user.id).all()
+        credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).all()
+        
+        return jsonify({
+            'user': {
+                'username': current_user.username,
+                'credits': current_user.credits
+            },
+            'documents': [{
+                'id': doc.id,
+                'title': doc.title,
+                'created_at': doc.created_at.isoformat()
+            } for doc in documents],
+            'credit_requests': [{
+                'id': req.id,
+                'amount': req.amount,
+                'status': req.status,
+                'created_at': req.created_at.isoformat()
+            } for req in credit_requests]
+        }), 200
+    except Exception as e:
+        return jsonify({'error': f'Error retrieving dashboard data: {str(e)}'}), 500
 
 @scanBP.route('/scan-document', methods=['POST'])
 @login_required
@@ -96,10 +98,13 @@ def scanDocument():
         try:
             if file.filename.endswith('.pdf'):
                 content = readPDFContent(file)
-            else:  # txt file
+            else:  
                 content = file.read().decode('utf-8')
         except Exception as e:
             return jsonify({'error': f'Error reading file: {str(e)}'}), 400
+        
+        if not content:
+            return jsonify({'error': 'File is empty or could not be read'}), 400
         
         try:
             new_doc = Document(
@@ -110,8 +115,12 @@ def scanDocument():
             )
 
             user = User.query.get(current_user.id)
+            if user is None:
+                return jsonify({'error': 'User not found'}), 404
+            
             if user.credits <= 0:
                 return jsonify({'error': 'Insufficient credits. Please request more credits.'}), 403           
+            
             db.session.add(new_doc)
             db.session.commit()
             db.session.refresh(new_doc)
@@ -121,44 +130,47 @@ def scanDocument():
                 'document': serializeDocument(new_doc),
                 'similar_documents': similar_docs
             }), 200
-            
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Database error: {str(e)}'}), 500
-        
+            
     except Exception as e:
         return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
-
-
 
 
 @scanBP.route('/request-credits', methods=['POST'])
 @login_required
 def requestCredits():
-    data = request.get_json()
-    amount = data.get('amount')
-    
-    if not amount or amount <= 0:
-        return jsonify({'error': 'Invalid credit amount'}), 400
+    try:
+        data = request.get_json()
+        amount = data.get('amount')
         
-    creditRequest = CreditRequest(
-        user_id=current_user.id,
-        amount=amount,
-        created_at=datetime.now(timezone.utc)
-    )
-    
-    db.session.add(creditRequest)
-    db.session.commit()
-    
-    return jsonify({
-        'message': 'Credit request submitted',
-        'request': {
-            'id': creditRequest.id,
-            'amount': creditRequest.amount,
-            'status': creditRequest.status,
-            'created_at': creditRequest.created_at.isoformat()
-        }
-    }), 201
+        if not amount or amount <= 0:
+            return jsonify({'error': 'Invalid credit amount'}), 400
+            
+        creditRequest = CreditRequest(
+            user_id=current_user.id,
+            amount=amount,
+            created_at=datetime.now(timezone.utc)
+        )
+        
+        db.session.add(creditRequest)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Credit request submitted',
+            'request': {
+                'id': creditRequest.id,
+                'amount': creditRequest.amount,
+                'status': creditRequest.status,
+                'created_at': creditRequest.created_at.isoformat()
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error processing credit request: {str(e)}'}), 500
+
 
 
 
