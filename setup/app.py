@@ -3,10 +3,7 @@ from flask_cors import CORS
 from datetime import timedelta
 import os
 from utils import createAdminUser, init_db
-from flask_login import LoginManager
 from routes import authBP, scanBP, adminBP
-login_manager = LoginManager()
-
 def createApp():
     app = Flask(__name__)
     
@@ -21,11 +18,10 @@ def createApp():
         DAILY_FREE_CREDITS=20
     )
     init_db(app)
-    CORS(app)
-    login_manager.init_app(app)
     app.register_blueprint(authBP,url_prefix='/api/auth')
     app.register_blueprint(scanBP,url_prefix='/api/scan')
     app.register_blueprint(adminBP,url_prefix='/api/admin')
     with app.app_context():
         createAdminUser()
+
     return app
