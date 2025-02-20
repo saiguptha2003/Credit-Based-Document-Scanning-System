@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from flask_login import login_required, current_user
 from models import User,CreditRequest,Document
+from utils import token_required
 from utils import db
 from datetime import datetime, timezone
 from functools import wraps
@@ -9,17 +9,17 @@ adminBP = Blueprint('adminBP', __name__)
 
 def adminRequired(f):
     @wraps(f)
-    def decoratedFunction(*args, **kwargs):
+    def decoratedFunction(current_user, *args, **kwargs):
         if not current_user.is_admin:
             return jsonify({'error': 'Admin access required'}), 403
-        return f(*args, **kwargs)
+        return f(current_user, *args, **kwargs)
     return decoratedFunction
 
 
 @adminBP.route('/dashboard', methods=['GET'])
-@login_required
+@token_required
 @adminRequired
-def adminDashboard():
+def adminDashboard(current_user):
     try:
         if not current_user.is_admin:
             return jsonify({'error': 'Admin access required'}), 403
@@ -46,9 +46,9 @@ def adminDashboard():
 
 
 @adminBP.route('/credit-requests/<int:request_id>', methods=['PUT'])
-@login_required
+@token_required
 @adminRequired
-def handleCreditRequest(request_id):
+def handleCreditRequest(current_user,request_id):
     try:
         data = request.get_json()
         action = data.get('action')
@@ -86,9 +86,9 @@ def handleCreditRequest(request_id):
 
 
 @adminBP.route('/analytics', methods=['GET'])
-@login_required
+@token_required
 @adminRequired
-def analytics():
+def analytics(current_user):
     user_stats = db.session.query(
         User.username,
         db.func.count(Document.id).label('scan_count')
